@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+
+	<include file="$(find ros_robotics)/launch/dd_velocity_controller.launch" />
+		
+
+	<!-- Load controllers -->
+	 <rosparam file="$(find ros_robotics)/config/dd_joint_velocity.yaml" command="load"/> 
+
+	<!-- Controllers-->
+	<node name="dd_controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="/dd_robot" 
+	args="--namespace=/dd_robot
+	joint_state_controller
+	left_velocity_controller
+	right_velocity_controller
+	"/>
+
+
+</launch>

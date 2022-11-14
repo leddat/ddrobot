@@ -1,0 +1,21 @@
+dd_robot:
+
+    joint_state_controller:
+        type: joint_state_controller/JointStateController
+        publish_rate: 100
+
+    left_velocity_controller:
+        type: velocity_controllers/JointVelocityController
+        joint: joint_left_wheel
+        pid: {p: 0.001, i: 0.0, d: 0.0}
+
+
+    right_velocity_controller:
+        type: velocity_controllers/JointVelocityController
+        joint: joint_right_wheel
+        pid: {p: 0.001, i: 0.0, d: 0.0}
+
+    gazebo_ros_control/pid_gains:
+        joint_left_wheel/p: 0.001
+        joint_right_wheel/p: 0.001
+        
