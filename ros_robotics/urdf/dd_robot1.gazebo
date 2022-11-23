@@ -16,7 +16,7 @@
   </gazebo>
   <gazebo>
     <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
-      <legacyMode>false</legacyMode>
+      <legacyMode>true</legacyMode>
       <alwaysOn>true</alwaysOn>
       <updateRate>20</updateRate>
       <leftJoint>joint_left_wheel</leftJoint>
@@ -26,7 +26,7 @@
       <commandTopic>cmd_vel</commandTopic>
       <odometryTopic>odom</odometryTopic>
       <odometryFrame>odom</odometryFrame>
-      <robotBaseFrame>base_link</robotBaseFrame>
+      <robotBaseFrame>dummy</robotBaseFrame>
     </plugin>
   </gazebo>
 
@@ -36,7 +36,7 @@
     <turnGravityOff>false</turnGravityOff>
     <sensor type="ray" name="head_hokuyo_sensor">
       <pose>${hokuyo_size/2} 0 0 0 0 0</pose>
-      <visualize>false</visualize>
+      <visualize>true</visualize>
       <update_rate>40</update_rate>
       <ray>
         <scan>
