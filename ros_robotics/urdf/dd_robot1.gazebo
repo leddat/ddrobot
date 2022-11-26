@@ -2,7 +2,11 @@
 <robot name="dd_robot">
   <gazebo reference="base_link">
     <material>Gazebo/Blue</material>
-    <pose>0 0 3 0 0 0</pose>
+    <pose>0 0 0 0 0 0</pose>
+  </gazebo>
+
+  <gazebo reference="caster_link">
+    <material>Gazebo/Black</material>
     <mu1 value="0.001" />
     <mu2 value="0.001" />
   </gazebo>
@@ -24,6 +28,7 @@
       <wheelDiameter>0.2</wheelDiameter>
       <torque>20</torque>
       <commandTopic>cmd_vel</commandTopic>
+      <odometrysource>WORLD</odometrysource>
       <odometryTopic>odom</odometryTopic>
       <odometryFrame>odom</odometryFrame>
       <robotBaseFrame>dummy</robotBaseFrame>

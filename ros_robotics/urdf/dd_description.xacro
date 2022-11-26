@@ -3,6 +3,25 @@
 <robot name="dd_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
 <xacro:property name="hokuyo_size" value="0.05" />
+
+  <material name="Black">
+    <color rgba="0.0 0.0 0.0 1.0"/>
+  </material>
+
+  <material name="Red">
+    <color rgba="0.8 0.0 0.0 1.0"/>
+  </material>
+
+  <material name="White">
+    <color rgba="1.0 1.0 1.0 1.0"/>
+  </material>
+
+
+  <material name="Blue">
+    <color rgba="0.0 0.0 0.8 1.0"/>
+  </material>
+
+
 <!--dummy-->
 <link name="dummy">
     <visual>
@@ -15,6 +34,14 @@
   <gazebo reference="dummy">
     <turnGravityOff>false</turnGravityOff>
   </gazebo>
+
+<!--dumm_joint-->
+  <joint name="dummy_joint" type="fixed">
+    <origin xyz="0 0 0.175" rpy="0 0 0"/>
+     <parent link="dummy"/>
+     <child link="base_link"/>
+  </joint>
+
   <!-- Base Link -->
   <link name="base_link">
     <visual>
@@ -22,7 +49,9 @@
       <geometry>
           <box size="0.8 0.5 0.25"/>
       </geometry>
+      <material name="Blue" />
     </visual>
+    
     <!-- Base collision, mass and inertia -->
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -34,17 +63,20 @@
       <mass value="5"/>
       <inertia ixx="0.13" ixy="0.0" ixz="0.0" iyy="0.37" iyz="0.0" izz="0.29"/>
     </inertial>
+  </link>
 
     <!-- Caster -->
-    <visual name="caster">
-      <origin xyz="0.345 0 -0.125" rpy="0 0 0" />
+    <link name="caster_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
         <sphere radius="0.05" />
       </geometry>
+      <material name="Black" />
     </visual>
     <!-- Caster collision, mass and inertia -->
     <collision>
-      <origin xyz="0.345 0 -0.125" rpy="0 0 0" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
         <sphere radius="0.05" />
       </geometry>
@@ -53,15 +85,15 @@
       <mass value="0.5"/>
       <inertia ixx="0.0005" ixy="0.0" ixz="0.0" iyy="0.0005" iyz="0.0" izz="0.0005"/>
     </inertial>
-
   </link>
-  <joint name="dummy_joint" type="fixed">
-    <origin xyz="0 0 -0.2" rpy="0 0 0"/>
-     <parent link="dummy"/>
-     <child link="base_link"/>
+
+  <!--Caster_joint-->
+  <joint name="caster_joint" type="fixed">
+    <origin xyz="0.345 0 -0.125" rpy="0 0 0"/>
+     <parent link="base_link"/>
+     <child link="caster_link"/>
   </joint>
-
-
+  
   <!-- Right Wheel -->
   <link name="right_wheel">
     <visual>
@@ -69,7 +101,9 @@
       <geometry>
           <cylinder length="0.1" radius="0.2" />
       </geometry>
+      <material name="Black" />
     </visual>
+
     <!-- Right Wheel collision, mass and inertia -->
     <collision>
       <origin xyz="0 0 0" rpy="1.570795 0 0" />
@@ -100,7 +134,9 @@
       <geometry>
           <cylinder length="0.1" radius="0.2" />
       </geometry>
+      <material name="Black" />
     </visual>
+
     <!-- Left Wheel collision, mass and inertia -->
     <collision>
       <origin xyz="0 0 0" rpy="1.570795 0 0" />
@@ -131,6 +167,7 @@
       <geometry>
         <box size="${hokuyo_size} ${hokuyo_size} ${hokuyo_size}"/>
       </geometry>
+      <material name="White" />
     </visual>
   </link>
   <joint name="hokuyo_joint" type="fixed">

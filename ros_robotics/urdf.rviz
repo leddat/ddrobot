@@ -84,7 +84,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 163; 163; 163
-    Fixed Frame: base_link
+    Fixed Frame: dummy
     Frame Rate: 30
   Name: root
   Tools:
