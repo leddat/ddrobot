@@ -148,7 +148,41 @@ class RobotControl():
 
         s = "Turned robot " + clockwise + " for " + str(time) + " seconds"
         return s
+    def rotate(self, degrees):
 
+        position = Point()
+
+        # Get the current position
+        (position, rotation) = self.get_odom()
+
+        # Set the movement command to a rotation
+        if degrees > 0:
+            self.cmd.angular.z = 0.3
+        else:
+            self.cmd.angular.z = -0.3
+
+        # Track the last angle measured
+        last_angle = rotation
+        
+        # Track how far we have turned
+        turn_angle = 0
+
+        goal_angle = radians(degrees)
+
+        # Begin the rotation
+        while abs(turn_angle + self.angular_tolerance) < abs(goal_angle) and not rospy.is_shutdown():
+            # Publish the Twist message and sleep 1 cycle         
+            self.vel_publisher.publish(self.cmd) 
+            self.rate.sleep()
+            
+            # Get the current rotation
+            (position, rotation) = self.get_odom()
+            
+            # Compute the amount of rotation since the last lopp
+            delta_angle = self.normalize_angle(rotation - last_angle)
+            
+            turn_angle += delta_angle
+            last_angle = rotation
 
 if __name__ == '__main__':
     
