@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from robot_control_class import RobotControl
 import time
 import math
@@ -19,7 +21,7 @@ class MoveRobot:
         m = self.robotcontrol.get_laser(15)
         n= self.robotcontrol.get_laser(360)
         p= self.robotcontrol.get_laser(719)
-        while m<50 and n<50 and p<50:
+        while m<100 or n<100 or p<100:
             # quay
             ls=[m,n,p]
             idx = self.findmax(ls)
@@ -45,7 +47,8 @@ class MoveRobot:
 
             #go
             a=self.robotcontrol.get_laser(360)
-            while a>1.2:
+            c=self.robotcontrol.get_laser(15)
+            while a>1.2 and c<30:
                 self.move_straight()
                 a=self.robotcontrol.get_laser(360)
                
@@ -56,7 +59,7 @@ class MoveRobot:
         self.robotcontrol.stop_robot()
 
         #Di ra
-        ls=[m,n,p]
+    """  ls=[m,n,p]
         idx = self.findmax(ls)
         self.robotcontrol.rotate((1-idx)*85)
         h1=self.robotcontrol.get_laser(160)
@@ -78,7 +81,7 @@ class MoveRobot:
         b=self.robotcontrol.get_laser(0)
         while 0>math.inf:
             self.move_straight()
-            b=self.robotcontrol.get_laser(0)  
-
+            b=self.robotcontrol.get_laser(0) 
+"""
 mr1 = MoveRobot()
 mr1.escape()

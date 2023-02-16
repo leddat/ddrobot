@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from robot_control_class import RobotControl
 
 robotcontrol=RobotControl()

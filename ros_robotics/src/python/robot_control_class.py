@@ -1,75 +1,69 @@
 #!/usr/bin/env python3
 
 import rospy
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, Point, Quaternion
 from sensor_msgs.msg import LaserScan
+from nav_msgs.msg import Odometry
+import tf
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
 import time
+from math import radians, copysign, sqrt, pow, pi
+import PyKDL
 
 
 class RobotControl():
 
-    def __init__(self, robot_name="ddrobot"):
+    def __init__(self):
         rospy.init_node('robot_control_node', anonymous=True)
-        rospy.loginfo("Robot ddrobot...")      
-        cmd_vel_topic='/cmd_vel'
-        self._check_laser_ready()
-
-        # We start the publisher
-        self.vel_publisher = rospy.Publisher(cmd_vel_topic, Twist, queue_size=1)
-        self.cmd = Twist()        
-
-        self.dd_laser_subscriber = rospy.Subscriber(
-            '/scan', LaserScan, self.dd_laser_callback)
-        
+        self.vel_publisher = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        self.laser_subscriber = rospy.Subscriber(
+            '/scan', LaserScan, self.laser_callback)
+        self.odom_sub = rospy.Subscriber ('/odom', Odometry, self.odom_callback)
+        self.cmd = Twist()
+        self.laser_msg = LaserScan()
+        self.roll = 0.0
+        self.pitch = 0.0
+        self.yaw = 0.0
         self.ctrl_c = False
-        self.rate = rospy.Rate(1)
+        self.rate = rospy.Rate(10)
+        self.tf_listener = tf.TransformListener()
+        self.odom_frame = '/odom'
+        self.base_frame = '/base_link'
+        self.angular_tolerance = radians(2)
         rospy.on_shutdown(self.shutdownhook)
 
-    
-    def _check_laser_ready(self):
-        self.dd_laser_msg = None
-        rospy.loginfo("Checking DDrobot Laser...")
-        while self.dd_laser_msg is None and not rospy.is_shutdown():
-            try:
-                self.dd_laser_msg = rospy.wait_for_message("/scan", LaserScan, timeout=1.0)
-                rospy.logdebug("Current /scan READY=>" + str(self.dd_laser_msg))
-
-            except:
-                rospy.logerr("Current /scan not ready yet, retrying for getting scan")
-        rospy.loginfo("Checking DDrobot Laser...DONE")
-        return self.dd_laser_msg
-
-
     def publish_once_in_cmd_vel(self):
-        
         while not self.ctrl_c:
             connections = self.vel_publisher.get_num_connections()
-            if connections > 0:
+            if connections > 0 or summit_connections > 0:
                 self.vel_publisher.publish(self.cmd)
-                #rospy.loginfo("Cmd Published")
+                rospy.loginfo("Cmd Published")
                 break
             else:
                 self.rate.sleep()
 
     def shutdownhook(self):
-        
         self.ctrl_c = True
 
+    def laser_callback(self, msg):
+        self.laser_msg = msg
 
-    def dd_laser_callback(self, msg):
-        self.dd_laser_msg = msg
+    def odom_callback(self, msg):
+        orientation_q = msg.pose.pose.orientation
+        orientation_list = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
+        (self.roll, self.pitch, self.yaw) = euler_from_quaternion (orientation_list)
 
     def get_laser(self, pos):
         time.sleep(1)
-        return self.dd_laser_msg.ranges[pos]
+        return self.laser_msg.ranges[pos]
 
     def get_front_laser(self):
         time.sleep(1)
-        return self.dd_laser_msg.ranges[360]
+        return self.laser_msg.ranges[360]
 
     def get_laser_full(self):
         time.sleep(1)
-        return self.dd_laser_msg.ranges
+        return self.laser_msg.ranges
 
     def stop_robot(self):
         #rospy.loginfo("shutdown time! Stop the robot")
@@ -80,7 +74,7 @@ class RobotControl():
     def move_straight(self):
 
         # Initilize velocities
-        self.cmd.linear.x = 0.15
+        self.cmd.linear.x = 0.5
         self.cmd.linear.y = 0
         self.cmd.linear.z = 0
         self.cmd.angular.x = 0
@@ -110,7 +104,7 @@ class RobotControl():
 
             # Publish the velocity
             self.vel_publisher.publish(self.cmd)
-            i += 1
+            i += 0.1
             self.rate.sleep()
 
         # set velocity to zero to stop the robot
@@ -136,11 +130,12 @@ class RobotControl():
 
         i = 0
         # loop to publish the velocity estimate, current_distance = velocity * (t1 - t0)
+        
         while (i <= time):
 
             # Publish the velocity
             self.vel_publisher.publish(self.cmd)
-            i += 1
+            i += 0.1
             self.rate.sleep()
 
         # set velocity to zero to stop the robot
@@ -148,6 +143,26 @@ class RobotControl():
 
         s = "Turned robot " + clockwise + " for " + str(time) + " seconds"
         return s
+
+    def get_odom(self):
+
+        # Get the current transform between the odom and base frames
+        tf_ok = 0
+        while tf_ok == 0 and not rospy.is_shutdown():
+            try:
+                self.tf_listener.waitForTransform('/base_link', '/odom', rospy.Time(), rospy.Duration(1.0))
+                tf_ok = 1
+            except (tf.Exception, tf.ConnectivityException, tf.LookupException):
+                pass
+
+        try:
+            (trans, rot)  = self.tf_listener.lookupTransform('odom', 'base_link', rospy.Time(0))
+        except (tf.Exception, tf.ConnectivityException, tf.LookupException):
+            rospy.loginfo("TF Exception")
+            return
+
+        return (Point(*trans), self.quat_to_angle(Quaternion(*rot)))
+
     def rotate(self, degrees):
 
         position = Point()
@@ -157,9 +172,9 @@ class RobotControl():
 
         # Set the movement command to a rotation
         if degrees > 0:
-            self.cmd.angular.z = 0.3
-        else:
             self.cmd.angular.z = -0.3
+        else:
+            self.cmd.angular.z = 0.3
 
         # Track the last angle measured
         last_angle = rotation
@@ -183,9 +198,23 @@ class RobotControl():
             
             turn_angle += delta_angle
             last_angle = rotation
+        
+        self.stop_robot()
+
+    def quat_to_angle(self, quat):
+        rot = PyKDL.Rotation.Quaternion(quat.x, quat.y, quat.z, quat.w)
+        return rot.GetRPY()[2]
+        
+    def normalize_angle(self, angle):
+        res = angle
+        while res > pi:
+            res -= 2.0 * pi
+        while res < -pi:
+            res += 2.0 * pi
+        return res
+
 
 if __name__ == '__main__':
-    
     robotcontrol_object = RobotControl()
     try:
         robotcontrol_object.move_straight()
