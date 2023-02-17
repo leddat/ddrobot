@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!--- Run gmapping -->
+  <include file="$(find ros_robotics)/launch/gmapping.launch" />
+
+  <!--- Run Move Base -->
+  <include file="$(find ros_robotics)/launch/move_base.launch" />
+
+</launch>
