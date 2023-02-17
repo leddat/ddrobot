@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <!--- Run Map Server with AMCL -->
+  <include file="$(find ros_robotics)/launch/amcl.launch" />
+
+  <!--- Run Move Base -->
+  <include file="$(find ros_robotics)/launch/move_base.launch" />
+
+</launch>

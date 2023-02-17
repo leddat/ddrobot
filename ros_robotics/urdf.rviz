@@ -47,6 +47,12 @@ Visualization Manager:
       Reference Frame: <Fixed Frame>
       Value: true
     - Alpha: 1
+      Class: rviz/LaserScan
+      Enabled: true
+      Topic: /scan
+      Class: rviz/Map
+      Enabled: true
+      Topic: /map
       Class: rviz/RobotModel
       Collision Enabled: false
       Enabled: true
@@ -84,7 +90,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 163; 163; 163
-    Fixed Frame: dummy
+    Fixed Frame: odom
     Frame Rate: 30
   Name: root
   Tools:
